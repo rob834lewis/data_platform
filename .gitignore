@@ -45,9 +45,9 @@ service-account.json
 .terraform/
 terraform.tfstate*
 .gcloud/
-*.yaml
+#*.yaml
 
 # Local configs (API keys, creds, etc.)
-config.yaml
-config.yml
+#config.yaml
+#config.yml
 credentials/
