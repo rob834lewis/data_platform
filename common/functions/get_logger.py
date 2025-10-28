@@ -15,6 +15,7 @@
   -------------
   11SEP2025   RLEWIS  Initial Version
   14SEP2025   RLEWIS  Updated log dir call
+  27OCT2025   RLEWIS  Added wdays
 ----------------------------------------------------------------------------------------------------------------------:
 """
 
@@ -23,6 +24,17 @@
 # ---------------
 
 from globals import *
+from .wdays  import wdays
+
+# ----------
+
+# ----------------------
+# --- Date Variables ---
+# ----------------------
+
+todays_date = wdays().get("todays_date")
+
+# ----------
 
 # ----------------
 # --- Function ---
@@ -32,7 +44,7 @@ def get_logger(name: str, log_dir: str = log_dir) -> logging.Logger:
     """Return a logger that writes to both console and rotating file."""
     # Ensure the log folder exists
     os.makedirs(log_dir, exist_ok=True)
-    logfile = os.path.join(log_dir, f"{name}.log")
+    logfile = os.path.join(log_dir, f"{name}_{todays_date}.log")
 
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
@@ -58,4 +70,4 @@ def get_logger(name: str, log_dir: str = log_dir) -> logging.Logger:
 
     return logger
 
-
+# ----------

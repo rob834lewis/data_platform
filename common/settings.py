@@ -15,6 +15,7 @@
     -------------
     11SEP2025   RLEWIS  Initial Version 
     14SEP2025   RLEWIS  Updated dev gcp bucket name
+    28OCT2025   RLEWIS  Removed normalised_path and read file content
 -------------------------------------------------------------------------------------------------------------------
 """
 
@@ -23,19 +24,11 @@
 # ---------------
 
 import os, socket, dateutil.parser
-
+from pathlib import Path
+   
 # -----------------
 # --- Functions ---
 # -----------------
-
-# function to return true normalised path
-def normalised_path(path):
-    if path == "//":
-        return "/"
-    elif path.startswith("//"):
-        return os.path.normpath(os.path.dirname(path))[1:]
-    else:
-        return os.path.normpath(os.path.dirname(path))
 
 # function to retrieve details of the current server
 def get_server_info():
@@ -47,25 +40,6 @@ def get_server_info():
         return hostname, ip_address
     except Exception as e:
         return f"Error: {e}"
-
-# function to read file content
-def _read_file_content(filepath):
-
-    try:
-        with open(filepath, "r") as f:
-            return f.read()
-    except FileNotFoundError:
-        print(f"Error: File '{filepath}' not found.")
-        return None
-
-# function to create directory if it doesn't exist
-def create_directory_if_not_exists(directory_path):
-    try:
-        if not os.path.exists(directory_path): #check if it exists first.
-            os.makedirs(directory_path, exist_ok=True)
-            print(f"Directory '{directory_path}' created successfully.")
-    except OSError as error:
-        print(f"Error creating directory '{directory_path}': {error}")
 
 # Pass ddmonyyyy to date akin to SAS date9. format    
 def d(dte):
@@ -118,5 +92,20 @@ hostname, ip_address = get_server_info()
 gcp_project = "data-coven-dev"
 gcp_bucket  = "data-coven-dev-eu-west2-001"  # Your GCS bucket name
 
+# ------------------------
+# --- File Directories ---
+# ------------------------
+
+current_file      = Path(__file__).resolve()
+project_root_name = "data-coven"
+
+# Look through all parent folders
+project_root = next((p for p in current_file.parents if p.name == project_root_name), None)
+
 # log directory
-log_dir = "/srv/data_coven/logs"
+log_dir = project_root / "logs"
+log_dir.mkdir(parents=True, exist_ok=True)  # Create folder if missing
+
+# data directory
+data_dir = project_root / "data"
+data_dir.mkdir(parents=True, exist_ok=True)  # Create folder if missing

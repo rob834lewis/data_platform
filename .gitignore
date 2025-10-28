@@ -51,3 +51,6 @@ terraform.tfstate*
 #config.yaml
 #config.yml
 credentials/
+
+# data folder
+data/
