@@ -15,7 +15,7 @@
     -------------
     11SEP2025   RLEWIS  Initial Version 
     14SEP2025   RLEWIS  Updated dev gcp bucket name
-    28OCT2025   RLEWIS  Removed normalised_path and read file content
+    28OCT2025   RLEWIS  Removed normalised_path and read file content, add platform and db details
 -------------------------------------------------------------------------------------------------------------------
 """
 
@@ -23,7 +23,7 @@
 # --- Imports ---
 # ---------------
 
-import os, socket, dateutil.parser
+import os, socket, dateutil.parser, platform, requests
 from pathlib import Path
    
 # -----------------
@@ -40,6 +40,64 @@ def get_server_info():
         return hostname, ip_address
     except Exception as e:
         return f"Error: {e}"
+
+# function to detect which OS is being run
+def detect_os():
+    os_name = platform.system()
+    if os_name == "Windows":
+        return "local_windows"
+    elif os_name == "Linux":
+        return "linux"
+    elif os_name == "Darwin":
+        return "macos"
+    return "unknown_os"
+
+# detect which cloud is being used 
+import requests
+
+def detect_cloud():
+    try:
+        # GCP metadata server
+        resp = requests.get(
+            "http://metadata.google.internal/computeMetadata/v1/project/project-id",
+            headers={"Metadata-Flavor": "Google"},
+            timeout=0.1
+        )
+        if resp.status_code == 200:
+            return "gcp"
+    except requests.exceptions.RequestException:
+        pass
+
+    try:
+        # AWS metadata server
+        resp = requests.get("http://169.254.169.254/latest/meta-data/", timeout=0.1)
+        if resp.status_code == 200:
+            return "aws"
+    except requests.exceptions.RequestException:
+        pass
+
+    try:
+        # Azure metadata server
+        resp = requests.get(
+            "http://169.254.169.254/metadata/instance?api-version=2021-02-01",
+            headers={"Metadata": "true"},
+            timeout=0.1
+        )
+        if resp.status_code == 200:
+            return "azure"
+    except requests.exceptions.RequestException:
+        pass
+
+    return "local_or_unknown"
+
+# function to detect which environment is being used
+# -> "local_windows", "gcp", "aws", "azure", etc.
+def detect_environment():
+    os_env = detect_os()
+    cloud_env = detect_cloud()
+    if cloud_env != "local_or_unknown":
+        return cloud_env
+    return os_env
 
 # Pass ddmonyyyy to date akin to SAS date9. format    
 def d(dte):
@@ -84,8 +142,65 @@ set_bank_hols = set([
     d("01JAN2030"),d("19APR2030"),d("22APR2030"),d("06MAY2030"),d("27MAY2030"),d("28AUG2030"),d("25DEC2030"),d("26DEC2030"),  
 ])
 
+# ---
 # server details
+# ---
+
 hostname, ip_address = get_server_info()
+
+# ------------------------
+# --- Database Options ---
+# ------------------------
+
+# THE CLOUD DETAILS BELOW IS JUST A DUMMY PLACEHOLDER
+# WILL NEED TO USE SECRET MANAGERS WHEN ACTUALLY USING CLOUD
+
+# Local / Docker Postgres
+db_config_local = {
+    "host"    : "localhost" , # Docker service hostname
+    "dbname"  : "airflow"   ,
+    "user"    : "airflow"   ,
+    "password": "airflow"
+}
+
+# --------------------------
+# --- GCP / Cloud SQL Postgres
+# --------------------------
+db_config_gcp = {
+    "host": "34.123.45.67",  # Cloud SQL public IP or private IP
+    "dbname": "exchange_rates",
+    "user": "gcp_user",
+    "password": "gcp_password",
+    "sslmode": "require"      # if using SSL
+}
+
+# --------------------------
+# --- AWS / RDS Postgres
+# --------------------------
+db_config_aws = {
+    "host": "mydbinstance.abcdefg12345.us-east-1.rds.amazonaws.com",
+    "dbname": "exchange_rates",
+    "user": "aws_user",
+    "password": "aws_password",
+    "port": 5432
+}
+
+# --------------------------
+# --- Azure / PostgreSQL Flexible Server
+# --------------------------
+db_config_azure = {
+    "host": "myserver.postgres.database.azure.com",
+    "dbname": "exchange_rates",
+    "user": "azure_user@myserver",
+    "password": "azure_password",
+    "sslmode": "require"
+}
+
+if detect_environment() == 'local_windows':
+    current_db = db_config_local
+else:
+    current_db = None
+
 
 # gcp details
 # <WILL NEED TO INCLUDE CHECK ON ENVIRONMENT HERE DEV,UAT OR PROD>

@@ -15,6 +15,7 @@
     -------------
     07SEP2025   RLEWIS  Initial Version
     14SEP2025   RLEWIS  Added bigquery & pandas_gbq imports
+    28OCT2025   RLEWIS  Added psycopg2
 ---------------------------------------------------------------------------------------------------
 """
 

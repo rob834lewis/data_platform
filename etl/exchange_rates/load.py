@@ -54,7 +54,8 @@ def load(df: pd.DataFrame):
         CREATE TABLE IF NOT EXISTS exchange_rates (
             date DATE,
             currency VARCHAR(10),
-            rate FLOAT
+            rate FLOAT,
+            PRIMARY KEY (date, currency)
         )
     """)
     conn.commit()
@@ -66,6 +67,8 @@ def load(df: pd.DataFrame):
             """
             INSERT INTO exchange_rates (date, currency, rate)
             VALUES (%s, %s, %s)
+            ON CONFLICT (date, currency)
+            DO UPDATE SET rate = EXCLUDED.rate
             """,
             (row['date'], row['currency'], row['rate'])
         )
