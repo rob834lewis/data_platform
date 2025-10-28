@@ -24,7 +24,13 @@
 from globals                      import *
 from etl.exchange_rates.extract   import extract
 from etl.exchange_rates.transform import transform
+from etl.exchange_rates.load      import load
 
+# Step 1: Extract
 raw_file = extract()
-df       = transform(raw_file)
-print(df.head())
+
+# Step 2: Transform
+df = transform(raw_file)
+
+# Step 3: Load
+load(df)

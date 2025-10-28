@@ -28,8 +28,9 @@ import numpy  as np                 # For scientific calculations
 import requests                     # For making HTTP requests
 import xml.etree.ElementTree as ET  # For parsing XML files
 import logging                      # For creating logs
+import pandas_gbq
+import psycopg2
 
 from google.cloud           import storage, bigquery          # For interacting with Google Cloud Storage (GCS) and bigquery
 from datetime               import datetime, date, timedelta  # For generating dates
 from dateutil.relativedelta import relativedelta              # For working with timedeltas
-import pandas_gbq

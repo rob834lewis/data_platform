@@ -1,2 +1,23 @@
 # data-coven
 Apps for Data Coven
+
+  airflow:
+    image: apache/airflow:2.10.2-python3.11
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: "randomstringhere1234567890"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    command: >
+      bash -c "airflow db upgrade &&
+               airflow users create --username admin --firstname admin --lastname admin --role Admin --email admin@example.com --password admin &&
+               airflow webserver & airflow scheduler"
+    ports:
+      - "8080:8080"
