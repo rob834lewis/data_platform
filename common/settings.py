@@ -16,6 +16,7 @@
     11SEP2025   RLEWIS  Initial Version 
     14SEP2025   RLEWIS  Updated dev gcp bucket name
     28OCT2025   RLEWIS  Removed normalised_path and read file content, add platform and db details
+    29OCT2025   RLEWIS  Added dotenv
 -------------------------------------------------------------------------------------------------------------------
 """
 
@@ -25,7 +26,8 @@
 
 import os, socket, dateutil.parser, platform, requests
 from pathlib import Path
-   
+from dotenv import load_dotenv
+
 # -----------------
 # --- Functions ---
 # -----------------
@@ -142,6 +144,32 @@ set_bank_hols = set([
     d("01JAN2030"),d("19APR2030"),d("22APR2030"),d("06MAY2030"),d("27MAY2030"),d("28AUG2030"),d("25DEC2030"),d("26DEC2030"),  
 ])
 
+# ------------------------
+# --- File Directories ---
+# ------------------------
+
+current_file      = Path(__file__).resolve()
+project_root_name = "data-coven"
+
+# Look through all parent folders
+project_root = next((p for p in current_file.parents if p.name == project_root_name), None)
+
+# log directory
+log_dir = project_root / "logs"
+log_dir.mkdir(parents=True, exist_ok=True)  # Create folder if missing
+
+# data directory
+data_dir = project_root / "data"
+data_dir.mkdir(parents=True, exist_ok=True)  # Create folder if missing
+
+# ---
+# env variables
+# ---
+
+# Load env
+env_file = project_root / ".env"
+loaded_dotenv = load_dotenv(dotenv_path=env_file)
+
 # ---
 # server details
 # ---
@@ -157,10 +185,10 @@ hostname, ip_address = get_server_info()
 
 # Local / Docker Postgres
 db_config_local = {
-    "host"    : "localhost" , # Docker service hostname
-    "dbname"  : "airflow"   ,
-    "user"    : "airflow"   ,
-    "password": "airflow"
+    "host"    : os.environ.get("POSTGRES_HOST"),
+    "dbname"  : os.environ.get("POSTGRES_DB"),
+    "user"    : os.environ.get("POSTGRES_USER"),
+    "password": os.environ.get("POSTGRES_PASSWORD")
 }
 
 # --------------------------
@@ -206,21 +234,3 @@ else:
 # <WILL NEED TO INCLUDE CHECK ON ENVIRONMENT HERE DEV,UAT OR PROD>
 gcp_project = "data-coven-dev"
 gcp_bucket  = "data-coven-dev-eu-west2-001"  # Your GCS bucket name
-
-# ------------------------
-# --- File Directories ---
-# ------------------------
-
-current_file      = Path(__file__).resolve()
-project_root_name = "data-coven"
-
-# Look through all parent folders
-project_root = next((p for p in current_file.parents if p.name == project_root_name), None)
-
-# log directory
-log_dir = project_root / "logs"
-log_dir.mkdir(parents=True, exist_ok=True)  # Create folder if missing
-
-# data directory
-data_dir = project_root / "data"
-data_dir.mkdir(parents=True, exist_ok=True)  # Create folder if missing

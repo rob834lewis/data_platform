@@ -54,6 +54,3 @@ credentials/
 
 # data folder
 data/
-
-# powershell
-*.ps1
