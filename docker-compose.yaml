@@ -4,82 +4,65 @@ services:
     container_name: data-coven-postgres
     restart: always
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    healthcheck: 
+    healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       timeout: 5s
       retries: 5
-      
-  # Service to initialize the Airflow database and create the admin user
+
   airflow-init:
     image: apache/airflow:3.1.1
     depends_on:
       postgres:
-        condition: service_healthy 
+        condition: service_healthy
     environment:
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      _AIRFLOW_WWW_USER_USERNAME: admin
-      _AIRFLOW_WWW_USER_PASSWORD: admin
-    
-    # FINAL FIX: Use a simple, quoted script string to avoid all indentation/whitespace issues
-    command: 
-      - bash
-      - -c
-      - |
-        echo 'Waiting for Postgres...';
-        i=0;
-        while ! pg_isready -h postgres -U airflow -t 1 && [ \$i -lt 30 ]; do
-          sleep 1;
-          i=\$((i+1));
-        done;
-        if [ \$i -eq 30 ]; then
-          echo 'Error: Postgres never became ready. Aborting.';
-          exit 1;
-        fi;
-        echo 'Postgres is ready. Starting migration.';
-        cp /opt/airflow/mounted_config/airflow.cfg /tmp/airflow.cfg && 
-        airflow db migrate
-
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     volumes:
-      - ./config/airflow.cfg:/opt/airflow/mounted_config/airflow.cfg:ro 
       - ./dags:/opt/airflow/dags
+    entrypoint: >
+      bash -c "airflow db migrate"
 
-  # Service to run the Airflow API Server (Webserver service name, API command)
   airflow-webserver:
     image: apache/airflow:3.1.1
     container_name: data-coven-airflow-webserver
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: always
     environment:
-      AIRFLOW_CONFIG: /opt/airflow/airflow.cfg 
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     ports:
       - "8080:8080"
     command: "airflow api-server"
     volumes:
-      - ./config/airflow.cfg:/opt/airflow/airflow.cfg 
       - ./dags:/opt/airflow/dags
 
-  # Service to run the Airflow Scheduler
   airflow-scheduler:
     image: apache/airflow:3.1.1
     container_name: data-coven-airflow-scheduler
     depends_on:
-      - airflow-webserver
-      - postgres
+      airflow-webserver:
+        condition: service_started
+      postgres:
+        condition: service_healthy
     restart: always
     environment:
-      AIRFLOW_CONFIG: /opt/airflow/airflow.cfg
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     command: "airflow scheduler"
     volumes:
-      - ./config/airflow.cfg:/opt/airflow/airflow.cfg 
       - ./dags:/opt/airflow/dags
 
 volumes:
