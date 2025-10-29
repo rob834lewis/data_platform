@@ -57,9 +57,8 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
     root = ET.fromstring(resp.content)
     
     # 2. Extract the date from the XML (e.g., <Cube time="YYYY-MM-DD">)
-    cube = root.find('.//Cube/Cube', ns)
-    xml_date = cube.get('time')  # string, e.g., "2025-10-27"
-    print(xml_date)
+    cube = root.find(".//ns:Cube[@time]", ns)
+    xml_date = cube.attrib.get("time")
     
     # 3. Connect to Postgres and find latest date
     conn = psycopg2.connect(
@@ -73,7 +72,6 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
     conn.close()
     
     latest_date_in_db = df.iloc[0, 0]  # this is a datetime.date object or None
-    print(latest_date_in_db)
 
     if latest_date_in_db is None:
         # Table empty → we definitely want to run

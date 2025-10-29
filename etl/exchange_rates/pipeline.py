@@ -36,7 +36,7 @@ logger = get_logger("exchange_rates_pipeline")
 def main():
 
     ecb_xml_url = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
-    ecb_xml_ns  = {'': 'http://www.ecb.int/vocabulary/2002-08-01/eurofxref'} 
+    ecb_xml_ns  = {'ns': 'http://www.ecb.int/vocabulary/2002-08-01/eurofxref'} 
 
     if check_for_new_data(ecb_xml_url, ecb_xml_ns, current_db):
 
@@ -44,15 +44,15 @@ def main():
             logger.info("=== Starting Exchange Rates ETL ===")
 
             # Step 1: Extract
-            raw_file = extract()
+            raw_file = extract(ecb_xml_url)
             logger.info(f"Extract step complete. File: {raw_file}")
 
             # Step 2: Transform
-            df = transform(raw_file)
+            df = transform(ecb_xml_ns, raw_file)
             logger.info(f"Transform step complete. Rows: {len(df)}")
 
             # Step 3: Load
-            load(df)
+            load(current_db, df)
             logger.info("Load step complete. Data inserted into Postgres.")
 
             logger.info("=== ETL Pipeline completed successfully ===")

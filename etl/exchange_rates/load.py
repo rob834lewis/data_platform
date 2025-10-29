@@ -22,7 +22,7 @@
 # ---------------
 
 from globals          import *
-from common.functions import wdays, get_logger
+from common.functions import get_logger
 
 # ----------------
 # --- Logging ---
@@ -34,7 +34,7 @@ logger = get_logger("exchange_rates_load")
 # --- Function ---
 # ----------------
 
-def load(df: pd.DataFrame):
+def load(db_config: dict, df: pd.DataFrame):
 
     """
     Load the transformed DataFrame into PostgreSQL.
@@ -42,10 +42,10 @@ def load(df: pd.DataFrame):
     """
     # --- DB connection ---
     conn = psycopg2.connect(
-        host="localhost",  # Change to cloud hostname when deploying
-        dbname="airflow",
-        user="airflow",
-        password="airflow"
+        host     = db_config["host"]   ,
+        dbname   = db_config["dbname"] ,
+        user     = db_config["user"]   ,
+        password = db_config["password"]
     )
     cur = conn.cursor()
 

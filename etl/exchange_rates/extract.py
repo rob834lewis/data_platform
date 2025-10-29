@@ -44,7 +44,7 @@ today = wdays().get("today")
 # --- Function ---
 # ----------------
 
-def extract() -> Path:
+def extract(url: str) -> Path:
 
     """
     Fetch ECB XML and save to raw folder.
@@ -55,12 +55,10 @@ def extract() -> Path:
         Path to the saved raw XML file.
     """
 
-    ecb_xml_url = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
-
     logger.info("Extracting daily exchange rates from ECB API")
 
     # --- Make request ---
-    resp = requests.get(ecb_xml_url)
+    resp = requests.get(url)
     resp.raise_for_status()
 
     # --- Build path ---

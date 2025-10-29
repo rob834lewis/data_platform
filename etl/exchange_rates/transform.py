@@ -43,7 +43,7 @@ today = wdays().get("today")
 # ----------------
 # --- Function ---
 # ----------------
-def transform(raw_path: Path) -> pd.DataFrame:
+def transform(ns: dict, raw_path: Path) -> pd.DataFrame:
     
     """
     Transform ECB XML data into a Pandas DataFrame and save a staging CSV.
@@ -65,18 +65,15 @@ def transform(raw_path: Path) -> pd.DataFrame:
     tree = ET.parse(raw_path)
     root = tree.getroot()
 
-    # ECB XML namespaces
-    ns = {
-        "ecb": "http://www.ecb.int/vocabulary/2002-08-01/eurofxref"
-    }
-
     # Extract date and rates
-    cube = root.find(".//ecb:Cube/ecb:Cube", ns)
-    date = cube.attrib.get("time")
+    cube_time = root.find(".//ns:Cube[@time]", ns)
+    if cube_time is None:
+        raise ValueError("No <Cube time=...> element found in XML. Check namespace or structure.")
+    date = cube_time.attrib.get("time")
 
     # Build list of dicts
     data = []
-    for currency_node in cube.findall("ecb:Cube", ns):
+    for currency_node in cube_time.findall("ns:Cube", ns):
         data.append({
             "date": date,
             "currency": currency_node.attrib["currency"],
