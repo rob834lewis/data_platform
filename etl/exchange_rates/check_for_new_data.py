@@ -60,25 +60,49 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
     cube = root.find(".//ns:Cube[@time]", ns)
     xml_date = cube.attrib.get("time")
     
-    # 3. Connect to Postgres and find latest date
-    conn = psycopg2.connect(
-        host     = db_config["host"]   ,
-        dbname   = db_config["dbname"] ,
-        user     = db_config["user"]   ,
-        password = db_config["password"]
-    )
-    query = "SELECT MAX(date) FROM exchange_rates;"
-    df = pd.read_sql(query, conn)
-    conn.close()
-    
-    latest_date_in_db = df.iloc[0, 0]  # this is a datetime.date object or None
+    conn = None
+    try:
+        # 3. Connect to Postgres
+        conn = psycopg2.connect(
+            host=db_config["host"],
+            dbname=db_config["dbname"],
+            user=db_config["user"],
+            password=db_config["password"]
+        )
 
-    if latest_date_in_db is None:
-        # Table empty → we definitely want to run
-        return True
-    
-    # Compare dates
-    return xml_date > latest_date_in_db.isoformat()
+        # 4. Check if table exists
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' AND table_name = 'exchange_rates'
+                );
+            """)
+            table_exists = cur.fetchone()[0]
+
+        if not table_exists:
+            print("Table 'exchange_rates' does not exist — treating as no data yet.")
+            return True  # table missing → definitely new data to load
+
+        # 5. Query latest date
+        query = "SELECT MAX(date) FROM exchange_rates;"
+        df = pd.read_sql(query, conn)
+        latest_date_in_db = df.iloc[0, 0] if not df.empty else None
+
+        if latest_date_in_db is None:
+            # Table exists but empty
+            return True
+
+        # 6. Compare XML date vs DB date
+        return xml_date > latest_date_in_db.isoformat()
+
+    except psycopg2.Error as e:
+        print("Database error:", e)
+        return True  # safer default → treat as needing to load new data
+
+    finally:
+        if conn:
+            conn.close()
 
     
     # ---------------
