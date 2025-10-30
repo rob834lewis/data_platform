@@ -42,11 +42,13 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+    entrypoint: ["/opt/airflow/scripts/wait_for_postgres.sh", "postgres", "webserver"]
     ports:
       - "8080:8080"
     command: "airflow api-server"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
 
   airflow-scheduler:
     build: ./airflow
@@ -61,9 +63,11 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+    entrypoint: ["/opt/airflow/scripts/wait_for_postgres.sh", "postgres", "scheduler"]   
     command: "airflow scheduler"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
 
 volumes:
   postgres_data:
