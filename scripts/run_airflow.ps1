@@ -1,6 +1,6 @@
 # run_airflow.ps1 - Portable version for subfolder
 
-# Get the script’s directory (scripts folder)
+# Get the script's directory (scripts folder)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 # Assume project root is the parent of the scripts folder
@@ -29,7 +29,6 @@ if (-Not (Test-Path $envFile)) {
     throw "Env file '$envFile' does not exist."
 }
 
-# Load .env file
 Get-Content $envFile | ForEach-Object {
     # Ignore empty lines or comments
     if ($_ -and $_ -notmatch "^\s*#") {
