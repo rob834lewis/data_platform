@@ -1,5 +1,18 @@
 # run_airflow.ps1 - Portable version for subfolder
 
+# Check Docker is running before proceeding
+try {
+    docker info > $null 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Docker is not running or not reachable."
+    }
+} catch {
+    Write-Host "ERROR: Docker does not appear to be running. Please start Docker Desktop and try again."
+    exit 1
+}
+
+Write-Host "Docker is running — proceeding..."
+
 # Get the script's directory (scripts folder)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
