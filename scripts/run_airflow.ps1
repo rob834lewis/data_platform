@@ -1,18 +1,5 @@
 # run_airflow.ps1 - Portable version for subfolder
 
-# Check Docker is running before proceeding
-try {
-    docker info > $null 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "Docker is not running or not reachable."
-    }
-} catch {
-    Write-Host "ERROR: Docker does not appear to be running. Please start Docker Desktop and try again."
-    exit 1
-}
-
-Write-Host "Docker is running — proceeding..."
-
 # Get the script's directory (scripts folder)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
@@ -63,6 +50,23 @@ foreach ($var in $requiredVars) {
         throw "Required environment variable '$var' is missing. Please add it to $envFile."
     }
 }
+
+# Check if Docker is running
+Write-Host "--- CHECK: Verifying Docker daemon status ---"
+try {
+    # Run a simple command, redirecting output to $null to keep the console clean
+    docker info | Out-Null
+    
+    # Check the $LASTEXITCODE variable. If docker is running, it should be 0.
+    if ($LASTEXITCODE -ne 0) {
+        throw "Docker daemon is not running or not accessible (exit code: $LASTEXITCODE). Please start Docker."
+    }
+    Write-Host "Docker daemon is running. Proceeding with Airflow setup."
+}
+catch {
+    throw "Error checking Docker status. Is Docker installed and in your PATH? Error: $($_.Exception.Message)"
+}
+# ---------------------------------------------
 
 # 1. Clean up previous runs
 Write-Host "--- DOWN: Cleaning up previous runs ---"
