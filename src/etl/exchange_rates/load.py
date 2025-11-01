@@ -21,7 +21,7 @@
 # --- Imports ---
 # ---------------
 
-from globals          import *
+from src.globals      import *
 from common.functions import get_logger
 
 # ----------------

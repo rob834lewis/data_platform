@@ -39,7 +39,7 @@ if project_root is None:
     raise RuntimeError(f"Could not find {project_root_name} in path hierarchy")
 
 # add the common directory to sys.path
-sys.path.append(str(project_root))
+sys.path.append(str(project_root)+'\\src')
 
 # thus enabling import of autoexec file
 from common.autoexec import *

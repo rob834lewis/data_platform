@@ -22,7 +22,7 @@
 # --- Imports ---
 # ---------------
 
-from globals                               import *
+from src.globals                           import *
 from common.functions                      import get_logger, wdays
 from etl.exchange_rates.check_for_new_data import check_for_new_data 
 from etl.exchange_rates.extract            import extract

@@ -32,12 +32,12 @@ sys.path.append("/opt/airflow")  # inside container
 sys.path.append("/opt/airflow/dags")  # just in case
 
 # --- Imports from your repo ---
-from src.globals import *
-from etl.exchange_rates.check_for_new_data import check_for_new_data
-from etl.exchange_rates.extract import extract
-from etl.exchange_rates.transform import transform
-from etl.exchange_rates.load import load
-from common.functions import wdays, get_logger
+from data_coven.common.globals import *
+from data_coven.etl.exchange_rates.check_for_new_data import check_for_new_data
+from data_coven.etl.exchange_rates.extract import extract
+from data_coven.etl.exchange_rates.transform import transform
+from data_coven.etl.exchange_rates.load import load
+from data_coven.common.functions import wdays, get_logger
 
 
 logger = get_logger("exchange_rates_dag")
