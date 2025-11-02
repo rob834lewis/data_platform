@@ -23,7 +23,8 @@
 
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python import PythonOperator, ShortCircuitOperator
+from airflow.providers.standard.operators.python import PythonOperator, ShortCircuitOperator
+
 import os
 import sys
 
@@ -57,7 +58,7 @@ def run_exchange_rates_etl():
 with DAG(
     dag_id="exchange_rates_etl",
     description="Daily ECB Exchange Rates ETL pipeline",
-    schedule_interval="@daily",
+    schedule="@daily",
     start_date=datetime(2025, 10, 29),
     catchup=False,
     tags=["ecb", "etl", "exchange_rates"]

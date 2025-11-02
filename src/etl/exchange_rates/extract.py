@@ -21,8 +21,8 @@
 # --- Imports ---
 # ---------------
 
-from src.globals      import *
-from common.functions import wdays, get_logger
+from src.globals          import *
+from src.common.functions import wdays, get_logger, ensure_directory_exists
 
 # ---------------
 # --- Logging ---
@@ -62,11 +62,11 @@ def extract(url: str) -> Path:
     resp.raise_for_status()
 
     # --- Build path ---
-    base_dir = data_dir / "ecb_daily_rates" / "raw"
-    base_dir.mkdir(parents=True, exist_ok=True)
+    base_dir = os.path.join(data_dir, "ecb_daily_rates", "raw")
+    ensure_directory_exists(base_dir) # Create folder if missing
 
     raw_filename = f"ecb_rates_{today}.xml"
-    raw_path = base_dir / raw_filename
+    raw_path = os.path.join(base_dir, raw_filename)
 
     # --- Save response text to file ---
     with open(raw_path, "w", encoding="utf-8") as f:

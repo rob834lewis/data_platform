@@ -17,6 +17,8 @@
     14SEP2025   RLEWIS  Updated dev gcp bucket name
     28OCT2025   RLEWIS  Removed normalised_path and read file content, add platform and db details
     29OCT2025   RLEWIS  Added dotenv
+    01NOV2025   RLEWIS  Updated project root logic to account for movement of code to src
+    02NOV2025   RLEWIS  Added docker db setting
 -------------------------------------------------------------------------------------------------------------------
 """
 
@@ -105,6 +107,25 @@ def detect_environment():
 def d(dte):
     return dateutil.parser.parse(dte).date()
 
+# create directory if it doesn't exist
+def ensure_directory_exists(path_string: str) -> None:
+    """
+    Checks if a directory exists at the given path string, and creates it 
+    (along with any necessary parent directories) if it doesn't.
+    """
+    if not os.path.exists(path_string):
+        # os.makedirs creates all intermediate directories needed.
+        # exist_ok=True (if you were using pathlib) is implicitly handled
+        # by checking os.path.exists first.
+        try:
+            os.makedirs(path_string)
+            print(f"Created directory: {path_string}")
+        except OSError as e:
+            # Handle potential permission errors or other system issues
+            print(f"Error creating directory {path_string}: {e}")
+            raise
+
+
 # -------------------------------
 # --- Global variables
 # -------------------------------
@@ -148,26 +169,42 @@ set_bank_hols = set([
 # --- File Directories ---
 # ------------------------
 
-current_file      = Path(__file__).resolve()
-project_root_name = "data-coven"
+# Set a fallback/default value
+project_root_env_var = os.environ.get("PROJECT_ROOT")
 
-# Look through all parent folders
-project_root = next((p for p in current_file.parents if p.name == project_root_name), None)
+if project_root_env_var:
+
+    # Use the path defined in the Docker Compose environment
+    project_root = project_root_env_var
+
+else:
+
+    # obtain current file information
+    current_file = Path(__file__).resolve()
+
+    # Assume project root name
+    project_root_name = "data-coven"
+
+    # Look through all parent folders
+    project_root = next((p for p in current_file.parents if p.name == project_root_name), None)
+
+    if project_root is None:
+        raise RuntimeError(f"Could not find {project_root_name} in path hierarchy")
 
 # log directory
-log_dir = project_root / "logs"
-log_dir.mkdir(parents=True, exist_ok=True)  # Create folder if missing
+log_dir = os.path.join(project_root,"src","logs")
+ensure_directory_exists(log_dir) # Create folder if missing
 
 # data directory
-data_dir = project_root / "data"
-data_dir.mkdir(parents=True, exist_ok=True)  # Create folder if missing
+data_dir = os.path.join(project_root,"src","data")
+ensure_directory_exists(data_dir) # Create folder if missing
 
 # ---
 # env variables
 # ---
 
 # Load env
-env_file = project_root / ".env"
+env_file = os.path.join(project_root,".env")
 loaded_dotenv = load_dotenv(dotenv_path=env_file)
 
 # ---
@@ -183,9 +220,17 @@ hostname, ip_address = get_server_info()
 # THE CLOUD DETAILS BELOW IS JUST A DUMMY PLACEHOLDER
 # WILL NEED TO USE SECRET MANAGERS WHEN ACTUALLY USING CLOUD
 
-# Local / Docker Postgres
+# Local Postgres
 db_config_local = {
-    "host"    : os.environ.get("POSTGRES_HOST"),
+    "host"    : os.environ.get("POSTGRES_HOST_LOCAL"),
+    "dbname"  : os.environ.get("POSTGRES_DB"),
+    "user"    : os.environ.get("POSTGRES_USER"),
+    "password": os.environ.get("POSTGRES_PASSWORD")
+}
+
+# Docker Postgres
+db_config_docker = {
+    "host"    : os.environ.get("POSTGRES_HOST_DOCKER"),
     "dbname"  : os.environ.get("POSTGRES_DB"),
     "user"    : os.environ.get("POSTGRES_USER"),
     "password": os.environ.get("POSTGRES_PASSWORD")
@@ -224,9 +269,18 @@ db_config_azure = {
     "sslmode": "require"
 }
 
+# if running locally
 if detect_environment() == 'local_windows':
+
     current_db = db_config_local
+
+# else if running in docker 
+elif project_root_env_var:
+
+    current_db = db_config_docker
+
 else:
+
     current_db = None
 
 

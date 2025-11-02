@@ -21,8 +21,8 @@
 # --- Imports ---
 # ---------------
 
-from src.globals      import *
-from common.functions import wdays, get_logger
+from src.globals          import *
+from src.common.functions import wdays, get_logger, ensure_directory_exists
 
 # ---------------
 # --- Logging ---
@@ -87,10 +87,10 @@ def transform(ns: dict, raw_path: Path) -> pd.DataFrame:
     df = pd.DataFrame(data)
 
     # --- Save staging CSV ---
-    staging_dir = data_dir / "ecb_daily_rates" / "staging"
-    staging_dir.mkdir(parents=True, exist_ok=True)
+    staging_dir = os.path.join(data_dir, "ecb_daily_rates", "staging")
+    ensure_directory_exists(staging_dir) # Create folder if missing
 
-    staging_file = staging_dir / f"ecb_rates_staging_{today}.csv"
+    staging_file = os.path.join(staging_dir, f"ecb_rates_staging_{today}.csv")
     df.to_csv(staging_file, index=False)
 
     logger.info(f"Staging CSV saved to {staging_file}")

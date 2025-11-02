@@ -3,19 +3,18 @@
 ----------------------------------------------------------------------------------------------------------------------
   Written by      : Rob Lewis
 
-  Date            : 11SEP2025
+  Date            : 12SEP2025
 
-  Purpose         : Build Bank Holiday Field
+  Purpose         : Write output to console and log file
 
   Dependencies    :
 
-  Module name    : bank_hol
+  Module name    : get_logger
 
   Modifications
   -------------
-  11SEP2025   RLEWIS  Initial Version
-  14SEP2025   RLEWIS  Updated log dir call
-  27OCT2025   RLEWIS  Added wdays
+  12SEP2025   RLEWIS  Initial Version
+  02NOV2025   RLEWIS  Updated header and explicitly set the stream to sys.stdout
 ----------------------------------------------------------------------------------------------------------------------:
 """
 
@@ -23,8 +22,8 @@
 # --- Imports ---
 # ---------------
 
-from globals import *
-from .wdays  import wdays
+from src.globals import *
+from .wdays      import wdays
 
 # ----------
 
@@ -54,7 +53,7 @@ def get_logger(name: str, log_dir: str = log_dir) -> logging.Logger:
         return logger
 
     # Console handler (INFO and above)
-    ch = logging.StreamHandler()
+    ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.INFO)
     ch.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
 

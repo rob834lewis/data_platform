@@ -17,5 +17,5 @@
 ----------------------------------------------------------------------------------------------------------------------:
 """
 
-from common.settings import *
-from common.imports  import *
+from src.common.settings import *
+from src.common.imports  import *

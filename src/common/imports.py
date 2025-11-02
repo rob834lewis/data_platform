@@ -16,6 +16,7 @@
     07SEP2025   RLEWIS  Initial Version
     14SEP2025   RLEWIS  Added bigquery & pandas_gbq imports
     28OCT2025   RLEWIS  Added psycopg2
+    02NOV2025   RLEWIS  Added sys
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -29,6 +30,7 @@ import numpy  as np                 # For scientific calculations
 import requests                     # For making HTTP requests
 import xml.etree.ElementTree as ET  # For parsing XML files
 import logging                      # For creating logs
+import sys
 import pandas_gbq
 import psycopg2
 

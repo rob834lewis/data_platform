@@ -21,8 +21,8 @@
 # --- Imports ---
 # ---------------
 
-from src.globals      import *
-from common.functions import wdays, get_logger
+from src.globals          import *
+from src.common.functions import wdays, get_logger
 
 # ---------------
 # --- Logging ---

@@ -21,7 +21,7 @@
 # --- Imports ---
 # ---------------
 
-from globals import *
+from src.globals import *
 
 # -----------------
 # --- Functions ---

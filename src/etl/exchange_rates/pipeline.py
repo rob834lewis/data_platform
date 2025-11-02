@@ -22,12 +22,12 @@
 # --- Imports ---
 # ---------------
 
-from src.globals                           import *
-from common.functions                      import get_logger, wdays
-from etl.exchange_rates.check_for_new_data import check_for_new_data 
-from etl.exchange_rates.extract            import extract
-from etl.exchange_rates.transform          import transform
-from etl.exchange_rates.load               import load
+from src.globals                               import *
+from src.common.functions                      import get_logger, wdays
+from src.etl.exchange_rates.check_for_new_data import check_for_new_data 
+from src.etl.exchange_rates.extract            import extract
+from src.etl.exchange_rates.transform          import transform
+from src.etl.exchange_rates.load               import load
 
 today = wdays().get("todays_date").strftime("%Y-%m-%d")
 

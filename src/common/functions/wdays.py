@@ -21,7 +21,7 @@
 # --- Imports ---
 # ---------------
 
-from globals import *
+from src.globals import *
 from .bank_hol   import bank_hol
 from .intnx      import intnx
 
