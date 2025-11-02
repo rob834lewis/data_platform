@@ -14,6 +14,7 @@
     Modifications
     -------------
     27OCT2025   RLEWIS  Initial Version
+    02NOV2025   RLEWIS  Changed print to logging
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -64,10 +65,10 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
     try:
         # 3. Connect to Postgres
         conn = psycopg2.connect(
-            host=db_config["host"],
-            dbname=db_config["dbname"],
-            user=db_config["user"],
-            password=db_config["password"]
+            host     = db_config["host"]   ,
+            dbname   = db_config["dbname"] ,
+            user     = db_config["user"]   ,
+            password = db_config["password"]
         )
 
         # 4. Check if table exists
@@ -81,7 +82,7 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
             table_exists = cur.fetchone()[0]
 
         if not table_exists:
-            print("Table 'exchange_rates' does not exist — treating as no data yet.")
+            logging.info("Table 'exchange_rates' does not exist — treating as no data yet.")
             return True  # table missing → definitely new data to load
 
         # 5. Query latest date
@@ -97,7 +98,7 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
         return xml_date > latest_date_in_db.isoformat()
 
     except psycopg2.Error as e:
-        print("Database error:", e)
+        logging.error("Database error:", e)
         return True  # safer default → treat as needing to load new data
 
     finally:

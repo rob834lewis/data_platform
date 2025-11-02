@@ -15,6 +15,7 @@
     -------------
     27OCT2025   RLEWIS  Initial Version
     28OCT2025   RLEWIS  Added logging and check_for_new_data
+    02NOV2025   RLEWIS  Added ns parameter to extract function and removed today call
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -23,13 +24,11 @@
 # ---------------
 
 from src.globals                               import *
-from src.common.functions                      import get_logger, wdays
+from src.common.functions                      import get_logger
 from src.etl.exchange_rates.check_for_new_data import check_for_new_data 
 from src.etl.exchange_rates.extract            import extract
 from src.etl.exchange_rates.transform          import transform
 from src.etl.exchange_rates.load               import load
-
-today = wdays().get("todays_date").strftime("%Y-%m-%d")
 
 logger = get_logger("exchange_rates_pipeline")
 
@@ -44,7 +43,7 @@ def main():
             logger.info("=== Starting Exchange Rates ETL ===")
 
             # Step 1: Extract
-            raw_file = extract(ecb_xml_url)
+            raw_file = extract(ecb_xml_url, ecb_xml_ns)
             logger.info(f"Extract step complete. File: {raw_file}")
 
             # Step 2: Transform
@@ -61,7 +60,7 @@ def main():
             logger.exception(f"ETL Pipeline failed: {e}")
             raise
     else:
-        logger.info(f"=== ETL Pipeline already run for {today}")
+        logger.info(f"=== ETL Pipeline already run for latest data") # RUN EXTRRACT HERE TO GET DATE!!!!
 
 if __name__ == "__main__":
     

@@ -14,6 +14,7 @@
     Modifications
     -------------
     27OCT2025   RLEWIS  Initial Version
+    02NOV2025   RLEWIS  File date is now taken from the data
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -32,19 +33,11 @@ logger = get_logger("exchange_rates")
     
     # ---------------
 
-# ----------------------
-# --- Date Variables ---
-# ----------------------
-
-today = wdays().get("today")
-    
-    # ---------------
-
 # ----------------
 # --- Function ---
 # ----------------
 
-def extract(url: str) -> Path:
+def extract(url: str, ns: str) -> Path:
 
     """
     Fetch ECB XML and save to raw folder.
@@ -60,12 +53,17 @@ def extract(url: str) -> Path:
     # --- Make request ---
     resp = requests.get(url)
     resp.raise_for_status()
+    root = ET.fromstring(resp.content)
+
+    # Extract the date from the XML
+    cube = root.find(".//ns:Cube[@time]", ns)
+    xml_date = pd.to_datetime(cube.attrib.get("time")).strftime("%Y%m%d")
 
     # --- Build path ---
     base_dir = os.path.join(data_dir, "ecb_daily_rates", "raw")
     ensure_directory_exists(base_dir) # Create folder if missing
 
-    raw_filename = f"ecb_rates_{today}.xml"
+    raw_filename = f"ecb_rates_{xml_date}.xml"
     raw_path = os.path.join(base_dir, raw_filename)
 
     # --- Save response text to file ---

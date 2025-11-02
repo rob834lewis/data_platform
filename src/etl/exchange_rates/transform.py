@@ -14,6 +14,7 @@
     Modifications
     -------------
     27OCT2025   RLEWIS  Initial Version
+    02NOV2025   RLEWIS  File date is now taken from the data
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -29,14 +30,6 @@ from src.common.functions import wdays, get_logger, ensure_directory_exists
 # ---------------
 
 logger = get_logger("exchange_rates")
-    
-    # ---------------
-
-# ----------------------
-# --- Date Variables ---
-# ----------------------
-
-today = wdays().get("today")
     
     # ---------------
 
@@ -70,6 +63,7 @@ def transform(ns: dict, raw_path: Path) -> pd.DataFrame:
     if cube_time is None:
         raise ValueError("No <Cube time=...> element found in XML. Check namespace or structure.")
     date = cube_time.attrib.get("time")
+    xmldsn = pd.to_datetime(cube_time.attrib.get("time")).strftime("%Y%m%d")
 
     # Build list of dicts
     data = []
@@ -90,7 +84,7 @@ def transform(ns: dict, raw_path: Path) -> pd.DataFrame:
     staging_dir = os.path.join(data_dir, "ecb_daily_rates", "staging")
     ensure_directory_exists(staging_dir) # Create folder if missing
 
-    staging_file = os.path.join(staging_dir, f"ecb_rates_staging_{today}.csv")
+    staging_file = os.path.join(staging_dir, f"ecb_rates_staging_{xmldsn}.csv")
     df.to_csv(staging_file, index=False)
 
     logger.info(f"Staging CSV saved to {staging_file}")
