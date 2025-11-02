@@ -97,10 +97,12 @@ def detect_cloud():
 # function to detect which environment is being used
 # -> "local_windows", "gcp", "aws", "azure", etc.
 def detect_environment():
-    os_env = detect_os()
+    os_env    = detect_os()
     cloud_env = detect_cloud()
+
     if cloud_env != "local_or_unknown":
         return cloud_env
+    
     return os_env
 
 # Pass ddmonyyyy to date akin to SAS date9. format    

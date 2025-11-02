@@ -59,17 +59,28 @@ def extract(url: str, ns: str) -> Path:
     cube = root.find(".//ns:Cube[@time]", ns)
     xml_date = pd.to_datetime(cube.attrib.get("time")).strftime("%Y%m%d")
 
-    # --- Build path ---
+    # Build raw filename    
+    raw_filename = f"ecb_rates_{xml_date}.xml"
+
+    # Build Local & Airflow path
     base_dir = os.path.join(data_dir, "ecb_daily_rates", "raw")
     ensure_directory_exists(base_dir) # Create folder if missing
 
-    raw_filename = f"ecb_rates_{xml_date}.xml"
     raw_path = os.path.join(base_dir, raw_filename)
 
-    # --- Save response text to file ---
+    # Save raw ECB rates to file
     with open(raw_path, "w", encoding="utf-8") as f:
         f.write(resp.text)
-
+        
     logger.info(f"Saved raw XML to {raw_path}")
+
+    """
+
+raw_prefix     = "raw/exchange_rates/"     # Folder (prefix) in bucket for raw files
+staging_prefix = "staging/exchange_rates/" # Folder for cleaned, intermediate CSV
+
+"""
+
+
 
     return raw_path
