@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<p>Welcome to the Data Coven Portfolio site.</p>
-<p>This is the local test front page. Flask is working!</p>
+<h2>Top 10 Exchange Rates</h2>
+<a href="{{ url_for('exchange_rates.top10') }}">View Top 10 Exchange Rates</a>
 {% endblock %}

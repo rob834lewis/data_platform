@@ -3,33 +3,33 @@
 ---------------------------------------------------------------------------------------------------
     Written by      : Rob Lewis
 
-    Date            : 06NOV2025
+    Date            : 07NOV2025
 
-    Purpose         : 
+    Purpose         : Central database connection placeholder for Flask app; db is initialised with app in __init__.py
 
     Dependencies    :
 
-    Program name    : run
+    Program name    : db
 
     Modifications
     -------------
-    06NOV2025   RLEWIS  Initial Version
+    07NOV2025   RLEWIS  Initial Version
 ---------------------------------------------------------------------------------------------------
 """
 
 # ---------------
 # --- Imports ---
 # ---------------
- 
-from src.apps.portfolio import create_app
+
+from flask_sqlalchemy import SQLAlchemy
 
         # ---------------
 
-# Call the factory function to create the Flask app instance
-app = create_app()
+# ------------
+# --- Main ---
+# ------------
 
-# Check if this file is being run directly
-if __name__ == "__main__":
-    
-    # start server
-    app.run(debug=True)
+# create SQLAlchemy object
+db = SQLAlchemy()
+
+        # ---------------
