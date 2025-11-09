@@ -19,6 +19,7 @@
     29OCT2025   RLEWIS  Added dotenv
     01NOV2025   RLEWIS  Updated project root logic to account for movement of code to src
     02NOV2025   RLEWIS  Added docker db setting
+    09NOV2025   RLEWIS  Updated with Azure settings
 -------------------------------------------------------------------------------------------------------------------
 """
 
@@ -264,17 +265,21 @@ db_config_aws = {
 # --- Azure / PostgreSQL Flexible Server
 # --------------------------
 db_config_azure = {
-    "host": "myserver.postgres.database.azure.com",
-    "dbname": "exchange_rates",
-    "user": "azure_user@myserver",
-    "password": "azure_password",
-    "sslmode": "require"
+    "host"    : os.environ.get("DB_HOST_AZURE"),
+    "dbname"  : os.environ.get("DB_NAME_AZURE"),
+    "user"    : os.environ.get("DB_USER_AZURE"),
+    "password": os.environ.get("DB_PASS_AZURE"),
+    "sslmode" : os.environ.get("DB_SSLM_AZURE")
 }
 
 # if running locally
 if detect_environment() == 'local_windows':
 
     current_db = db_config_local
+
+elif detect_environment() == 'azure':
+
+    current_db = db_config_azure
 
 # else if running in docker 
 elif project_root_env_var:
