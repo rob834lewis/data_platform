@@ -285,8 +285,8 @@ if detect_environment() == 'local_windows':
 elif detect_environment() == 'azure':
 
     current_db = db_config_azure
-    app_host   = os.environ.get("APP_HOST_AZURE")
-    app_dbug   = os.environ.get("APP_DBUG_AZURE")
+    app_host   = os.environ.get("APP_HOST_CLOUD")
+    app_dbug   = os.environ.get("APP_DBUG_CLOUD")
 
 # else if running in docker 
 elif project_root_env_var:
