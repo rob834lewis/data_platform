@@ -14,6 +14,7 @@
     Modifications
     -------------
     27OCT2025   RLEWIS  Initial Version
+    09NOV2025   RLEWIS  Changed to use SQLAlchemy
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -41,42 +42,38 @@ def load(db_config: dict, df: pd.DataFrame):
     For local testing, it connects to a Docker Postgres instance.
     """
     # --- DB connection ---
-    conn = psycopg2.connect(
-        host     = db_config["host"]   ,
-        dbname   = db_config["dbname"] ,
-        user     = db_config["user"]   ,
-        password = db_config["password"]
+    db_url = (
+        f"postgresql+psycopg2://{db_config['user']}:{db_config['password']}"
+        f"@{db_config['host']}:{db_config['port']}/{db_config['dbname']}?sslmode={db_config['sslmode']}"
     )
-    cur = conn.cursor()
+
+    engine = create_engine(db_url)
 
     # --- Create table if it doesn't exist ---
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS exchange_rates (
-            date DATE,
-            currency VARCHAR(10),
-            rate FLOAT,
-            PRIMARY KEY (date, currency)
-        )
-    """)
-    conn.commit()
-    logger.info("Table exchange_rates ensured in Postgres.")
+    metadata = MetaData()
+    exchange_rates = Table(
+        'exchange_rates',
+        metadata,
+        Column('date', Date, primary_key=True),
+        Column('currency', String(10), primary_key=True),
+        Column('rate', Float)
+    )
+
+    # --- Create table if it doesn't exist ---
+    metadata.create_all(engine)
+    logger.info("Table exchange_rates created in Postgres.")
 
     # --- Insert rows ---
-    for _, row in df.iterrows():
-        cur.execute(
-            """
-            INSERT INTO exchange_rates (date, currency, rate)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (date, currency)
-            DO UPDATE SET rate = EXCLUDED.rate
-            """,
-            (row['date'], row['currency'], row['rate'])
-        )
-
-    conn.commit()
+    with engine.begin() as conn:  # context manager handles commit/rollback
+        for _, row in df.iterrows():
+            stmt = insert(exchange_rates).values(
+                date=row['date'],
+                currency=row['currency'],
+                rate=row['rate']
+            ).on_conflict_do_update(
+                index_elements=['date', 'currency'],
+                set_={'rate': row['rate']}
+            )
+            conn.execute(stmt)
     logger.info(f"{len(df)} rows inserted into exchange_rates.")
 
-    # --- Close connection ---
-    cur.close()
-    conn.close()
-    logger.info("Postgres connection closed.")

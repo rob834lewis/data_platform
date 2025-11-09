@@ -17,6 +17,7 @@
     14SEP2025   RLEWIS  Added bigquery & pandas_gbq imports
     28OCT2025   RLEWIS  Added psycopg2
     02NOV2025   RLEWIS  Added sys
+    09NOV2025   RLEWIS  Added sqlalchemy
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -33,6 +34,8 @@ import logging                      # For creating logs
 import sys
 import pandas_gbq
 import psycopg2
+from sqlalchemy import create_engine, text, Table, Column, Date, String, Float, MetaData
+from sqlalchemy.dialects.postgresql import insert
 
 from google.cloud           import storage, bigquery          # For interacting with Google Cloud Storage (GCS) and bigquery
 from datetime               import datetime, date, timedelta  # For generating dates

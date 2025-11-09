@@ -19,7 +19,7 @@
     29OCT2025   RLEWIS  Added dotenv
     01NOV2025   RLEWIS  Updated project root logic to account for movement of code to src
     02NOV2025   RLEWIS  Added docker db setting
-    09NOV2025   RLEWIS  Updated with Azure settings
+    09NOV2025   RLEWIS  Updated with Azure and app settings
 -------------------------------------------------------------------------------------------------------------------
 """
 
@@ -225,10 +225,12 @@ hostname, ip_address = get_server_info()
 
 # Local Postgres
 db_config_local = {
-    "host"    : os.environ.get("POSTGRES_HOST_LOCAL"),
-    "dbname"  : os.environ.get("POSTGRES_DB"),
-    "user"    : os.environ.get("POSTGRES_USER"),
-    "password": os.environ.get("POSTGRES_PASSWORD")
+    "host"    : os.environ.get("DB_HOST_LOCAL"),
+    "port"    : os.environ.get("DB_PORT_LOCAL"),
+    "dbname"  : os.environ.get("DB_NAME_LOCAL"),
+    "user"    : os.environ.get("DB_USER_LOCAL"),
+    "password": os.environ.get("DB_PASS_LOCAL"),
+    "sslmode" : os.environ.get("DB_SSLM_LOCAL")
 }
 
 # Docker Postgres
@@ -276,10 +278,14 @@ db_config_azure = {
 if detect_environment() == 'local_windows':
 
     current_db = db_config_local
+    app_host   = os.environ.get("APP_HOST_LOCAL")
+    app_dbug   = os.environ.get("APP_DBUG_LOCAL")
 
 elif detect_environment() == 'azure':
 
     current_db = db_config_azure
+    app_host   = os.environ.get("APP_HOST_AZURE")
+    app_dbug   = os.environ.get("APP_DBUG_AZURE")
 
 # else if running in docker 
 elif project_root_env_var:
