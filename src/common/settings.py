@@ -268,6 +268,7 @@ db_config_aws = {
 # --------------------------
 db_config_azure = {
     "host"    : os.environ.get("DB_HOST_AZURE"),
+    "port"    : os.environ.get("DB_PORT_AZURE"),
     "dbname"  : os.environ.get("DB_NAME_AZURE"),
     "user"    : os.environ.get("DB_USER_AZURE"),
     "password": os.environ.get("DB_PASS_AZURE"),
