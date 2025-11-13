@@ -16,6 +16,7 @@
     27OCT2025   RLEWIS  Initial Version
     02NOV2025   RLEWIS  Changed print to logging
     09NOV2025   RLEWIS  Changed to use SQLAlchemy
+    13NOV2025   RLEWIS  Added testing vars
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -53,6 +54,15 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
         bool: True if new data is available, False otherwise.
     """
 
+    """
+
+    Testing
+    url = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    ns  = {'ns': 'http://www.ecb.int/vocabulary/2002-08-01/eurofxref'} 
+    db_config = current_db
+    
+    """
+
     # 1. Fetch XML 
     resp = requests.get(url)
     resp.raise_for_status()
@@ -82,7 +92,7 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
             table_exists = conn.execute(text(table_check_query)).scalar()
 
         if not table_exists:
-            logging.info("Table 'exchange_rates' does not exist — treating as no data yet.")
+            logger.info("Table 'exchange_rates' does not exist — treating as no data yet.")
             return True  # table missing -> definitely new data to load
 
         # 5. Query latest date
@@ -98,7 +108,7 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
         return xml_date > latest_date_in_db.isoformat()
 
     except Exception as e:
-        logging.error("Database error:", exc_info=e)
+        logger.error("Database error:", exc_info=e)
         return True  # safer default -> treat as needing to load new data
 
     

@@ -30,6 +30,8 @@
 import os, socket, dateutil.parser, platform, requests
 from pathlib import Path
 from dotenv import load_dotenv
+import boto3
+import json
 
 # -----------------
 # --- Functions ---
@@ -75,7 +77,14 @@ def detect_cloud():
 
     try:
         # AWS metadata server
-        resp = requests.get("http://169.254.169.254/latest/meta-data/", timeout=0.1)
+        token_resp = requests.put(
+            "http://169.254.169.254/latest/api/token",
+            headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
+            timeout=1
+        )
+        token = token_resp.text
+
+        resp = requests.get("http://169.254.169.254/latest/meta-data/", headers={"X-aws-ec2-metadata-token": token}, timeout=1)
         if resp.status_code == 200:
             return "aws"
     except requests.exceptions.RequestException:
@@ -183,13 +192,17 @@ if project_root_env_var:
 else:
 
     # obtain current file information
-    current_file = Path(__file__).resolve()
+    try:
+        current_file = Path(__file__).resolve()
+
+    except NameError:
+        current_file = Path.cwd()
 
     # Assume project root name
     project_root_name = "data-coven"
 
     # Look through all parent folders
-    project_root = next((p for p in current_file.parents if p.name == project_root_name), None)
+    project_root = next( (p for p in [current_file] + list(current_file.parents) if p.name == project_root_name), None)
 
     if project_root is None:
         raise RuntimeError(f"Could not find {project_root_name} in path hierarchy")
@@ -253,17 +266,6 @@ db_config_gcp = {
 }
 
 # --------------------------
-# --- AWS / RDS Postgres
-# --------------------------
-db_config_aws = {
-    "host": "mydbinstance.abcdefg12345.us-east-1.rds.amazonaws.com",
-    "dbname": "exchange_rates",
-    "user": "aws_user",
-    "password": "aws_password",
-    "port": 5432
-}
-
-# --------------------------
 # --- Azure / PostgreSQL Flexible Server
 # --------------------------
 db_config_azure = {
@@ -281,6 +283,37 @@ if detect_environment() == 'local_windows':
     current_db = db_config_local
     app_host   = os.environ.get("APP_HOST_LOCAL")
     app_dbug   = os.environ.get("APP_DBUG_LOCAL")
+
+elif detect_environment() == 'aws':
+
+    # --------------------------
+    # --- AWS / RDS Postgres
+    # --------------------------
+
+    secret_name = "rds!db-6e4e1293-907d-4132-aa4d-21b33c883d07"
+    region_name = "eu-north-1"
+
+    client = boto3.client('secretsmanager', region_name=region_name)
+    secret = client.get_secret_value(SecretId=secret_name)
+
+    # The secret string is a JSON string
+    secret_json = secret["SecretString"]
+
+    # Convert JSON string to Python dictionary
+    secret_dict = json.loads(secret_json)
+
+    db_config_aws = {
+        "host"    : os.environ.get("DB_HOST_AWS") ,
+        "dbname"  : os.environ.get("DB_NAME_AWS") ,
+        "user"    : secret_dict["username"]       ,
+        "password": secret_dict["password"]       ,
+        "port"    : os.environ.get("DB_PORT_AWS") ,
+        "sslmode" : os.environ.get("DB_SSLM_AWS")
+    }
+
+    current_db = db_config_aws
+    app_host   = os.environ.get("APP_HOST_CLOUD")
+    app_dbug   = os.environ.get("APP_DBUG_CLOUD")
 
 elif detect_environment() == 'azure':
 
