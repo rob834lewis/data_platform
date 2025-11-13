@@ -15,6 +15,7 @@
     -------------
     27OCT2025   RLEWIS  Initial Version
     02NOV2025   RLEWIS  Changed print to logging
+    09NOV2025   RLEWIS  Changed to use SQLAlchemy
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -23,7 +24,7 @@
 # ---------------
 
 from src.globals          import *
-from src.common.functions import wdays, get_logger
+from src.common.functions import get_logger
 
 # ---------------
 # --- Logging ---
@@ -60,34 +61,33 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
     # 2. Extract the date from the XML (e.g., <Cube time="YYYY-MM-DD">)
     cube = root.find(".//ns:Cube[@time]", ns)
     xml_date = cube.attrib.get("time")
-    
-    conn = None
+
     try:
         # 3. Connect to Postgres
-        conn = psycopg2.connect(
-            host     = db_config["host"]   ,
-            dbname   = db_config["dbname"] ,
-            user     = db_config["user"]   ,
-            password = db_config["password"]
+        db_url = (
+            f"postgresql+psycopg2://{db_config['user']}:{db_config['password']}"
+            f"@{db_config['host']}:{db_config['port']}/{db_config['dbname']}?sslmode={db_config['sslmode']}"
         )
 
+        engine = create_engine(db_url)
+
         # 4. Check if table exists
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' AND table_name = 'exchange_rates'
-                );
-            """)
-            table_exists = cur.fetchone()[0]
+        table_check_query = """
+        SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' AND table_name = 'exchange_rates'
+        );
+        """
+        with engine.connect() as conn:
+            table_exists = conn.execute(text(table_check_query)).scalar()
 
         if not table_exists:
             logging.info("Table 'exchange_rates' does not exist — treating as no data yet.")
-            return True  # table missing → definitely new data to load
+            return True  # table missing -> definitely new data to load
 
         # 5. Query latest date
-        query = "SELECT MAX(date) FROM exchange_rates;"
-        df = pd.read_sql(query, conn)
+        latest_query = "SELECT MAX(date) FROM exchange_rates;"
+        df = pd.read_sql(latest_query, engine)
         latest_date_in_db = df.iloc[0, 0] if not df.empty else None
 
         if latest_date_in_db is None:
@@ -97,13 +97,9 @@ def check_for_new_data(url: str, ns: dict, db_config: dict) -> bool:
         # 6. Compare XML date vs DB date
         return xml_date > latest_date_in_db.isoformat()
 
-    except psycopg2.Error as e:
-        logging.error("Database error:", e)
-        return True  # safer default → treat as needing to load new data
-
-    finally:
-        if conn:
-            conn.close()
+    except Exception as e:
+        logging.error("Database error:", exc_info=e)
+        return True  # safer default -> treat as needing to load new data
 
     
     # ---------------
