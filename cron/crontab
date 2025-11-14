@@ -1,0 +1,2 @@
+
+0 16 * * 1-5 /srv/data-coven/shell/run_exchange_rates.sh >> /srv/data-coven/src/logs/exchange_rates_cron.log 2>&1
