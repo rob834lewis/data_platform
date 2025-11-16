@@ -321,6 +321,15 @@ elif detect_environment() == 'azure':
     app_host   = os.environ.get("APP_HOST_CLOUD")
     app_dbug   = os.environ.get("APP_DBUG_CLOUD")
 
+elif detect_environment() == 'gcp':
+
+    current_db = db_config_azure
+    app_host   = os.environ.get("APP_HOST_CLOUD")
+    app_dbug   = os.environ.get("APP_DBUG_CLOUD")
+
+    gcp_project = "data-coven-dev"
+    gcp_bucket  = "data-coven-dev-eu-west2-001" 
+
 # else if running in docker 
 elif project_root_env_var:
 
@@ -329,9 +338,3 @@ elif project_root_env_var:
 else:
 
     current_db = None
-
-
-# gcp details
-# <WILL NEED TO INCLUDE CHECK ON ENVIRONMENT HERE DEV,UAT OR PROD>
-gcp_project = "data-coven-dev"
-gcp_bucket  = "data-coven-dev-eu-west2-001"  # Your GCS bucket name
