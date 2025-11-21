@@ -255,17 +255,6 @@ db_config_docker = {
 }
 
 # --------------------------
-# --- GCP / Cloud SQL Postgres
-# --------------------------
-db_config_gcp = {
-    "host": "34.123.45.67",  # Cloud SQL public IP or private IP
-    "dbname": "exchange_rates",
-    "user": "gcp_user",
-    "password": "gcp_password",
-    "sslmode": "require"      # if using SSL
-}
-
-# --------------------------
 # --- Azure / PostgreSQL Flexible Server
 # --------------------------
 db_config_azure = {
@@ -275,6 +264,15 @@ db_config_azure = {
     "user"    : os.environ.get("DB_USER_AZURE"),
     "password": os.environ.get("DB_PASS_AZURE"),
     "sslmode" : os.environ.get("DB_SSLM_AZURE")
+}
+
+# --------------------------
+# --- GCP / Cloud SQL Postgres
+# --------------------------
+db_config_gcp = {
+    "gcp_project": os.environ.get("GCP_PROJECT"),
+    "gcp_dataset": os.environ.get("GCP_DATASET"),
+    "gcp_bucket" : os.environ.get("GCP_BUCKET")
 }
 
 # if running locally
@@ -323,12 +321,10 @@ elif detect_environment() == 'azure':
 
 elif detect_environment() == 'gcp':
 
-    current_db = db_config_azure
+    current_db = db_config_gcp
     app_host   = os.environ.get("APP_HOST_CLOUD")
     app_dbug   = os.environ.get("APP_DBUG_CLOUD")
 
-    gcp_project = "data-coven-dev"
-    gcp_bucket  = "data-coven-dev-eu-west2-001" 
 
 # else if running in docker 
 elif project_root_env_var:
