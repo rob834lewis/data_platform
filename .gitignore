@@ -57,3 +57,6 @@ data/
 
 # testing folder
 testing/
+
+# database files
+*.db

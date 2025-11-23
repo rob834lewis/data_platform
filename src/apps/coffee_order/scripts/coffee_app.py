@@ -17,19 +17,20 @@ Modifications
 ----------------------------------------------------------------------------------------------------------------------
 """
 
-from flask import Flask, render_template, request, redirect, url_for, session, g
+from flask import Flask, render_template, request, redirect, url_for, session, g, jsonify
 import os
 import uuid # for generating user id
 import logging
 import sqlite3
 import datetime
+import time
 from functools import wraps
 
 # ---------------
 # --- Logging ---
 # ---------------
 
-log_file = 'C:/Users/Admin/Documents/python/apps/coffee/logs/coffee_app.log' # file for storing log
+log_file = '/srv/data-coven/src/logs/coffee_app.log' # file for storing log
 
 logging.basicConfig(
     level    = logging.INFO                               ,
@@ -50,7 +51,7 @@ logging.info(f"Application stating up...")
 # --- Application Config ---
 # --------------------------
 
-app = Flask(__name__)
+app = Flask(__name__,template_folder='/srv/data-coven/src/apps/coffee_order/templates')
 
 # this key is used to sign the session cookie. Would need to be changed in a production environment
 app.secret_key = 'a_very_secret_key_for_coffee_app' 
@@ -133,7 +134,8 @@ coffees = [
     Coffee(1, "Espresso"   , 2.50, "A strong, concentrated coffee beverage."                  ),
     Coffee(2, "Flat White" , 3.75, "Espresso with steamed milk and a thin layer of microfoam."),
     Coffee(3, "Americano"  , 3.20, "Espresso shots diluted with hot water."                   ),
-    Coffee(4, "Cappuccino" , 3.90, "Equal parts espresso, steamed milk, and foamed milk."     )
+    Coffee(4, "Cappuccino" , 3.90, "Equal parts espresso, steamed milk, and foamed milk."     ),
+    Coffee(5, "Latte"      , 3.90, "Espresso with hot steamed milk, milder than Flat White."     )
 ]
 
 # find coffee function
@@ -288,6 +290,37 @@ def dashboard():
     return render_template('dashboard.html', user_id=user_id, orders=orders)
 
 
+@app.route('/recent_orders')
+#@login_required
+def recent_orders():
+    try:
+        db = get_db_connection()
+        rows = db.execute(
+            'SELECT * FROM orders ORDER BY id DESC LIMIT 20'
+        ).fetchall()
+
+        orders = [{
+            'id': row['id'],
+            'user_id': row['user_id'],
+            'coffee_name': row['coffee_name'],
+            'coffee_price': row['coffee_price'],
+            'created_at': row['created_at']
+        } for row in rows]
+
+        return {'orders': orders}
+
+    except sqlite3.Error as e:
+        logging.error(f"Database error during recent orders fetch: {e}")
+        return {'orders': []}, 500
+
+
+
+@app.route('/live_dashboard')
+#@login_required
+def live_dashboard():
+    return render_template('live_dashboard.html')
+
+
 # ---
 # Run the app
 # ---
@@ -296,4 +329,4 @@ if __name__ == '__main__':
     # When you run this file directly, it starts the web server
 
     # debug=True allows the server to automatically reload when you make changes
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
