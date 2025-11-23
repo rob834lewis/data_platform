@@ -166,7 +166,6 @@ def login_required(f):
 # --- Routes and Logic
 # ---
 
-
 @app.route('/')
 def index():
     user_id = get_current_user_id()
@@ -291,7 +290,6 @@ def dashboard():
 
 
 @app.route('/recent_orders')
-#@login_required
 def recent_orders():
     try:
         db = get_db_connection()
@@ -313,10 +311,7 @@ def recent_orders():
         logging.error(f"Database error during recent orders fetch: {e}")
         return {'orders': []}, 500
 
-
-
 @app.route('/live_dashboard')
-#@login_required
 def live_dashboard():
     return render_template('live_dashboard.html')
 
