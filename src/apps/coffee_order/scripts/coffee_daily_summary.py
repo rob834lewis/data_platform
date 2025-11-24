@@ -15,6 +15,7 @@ Modifications
 -------------
 22NOV2025   RLEWIS  Initial Version
 23NOV2025   RLEWIS  Added date clause
+24NOV2025   RLEWIS  Set _ for sql output
 ----------------------------------------------------------------------------------------------------------------------
 """
 
@@ -92,7 +93,7 @@ if df.shape[0] > 0:
     ).reset_index()
 
     # Save to a new table
-    daily_summary.to_sql('daily_summary', conn, if_exists='replace', index=False)
+    _ = daily_summary.to_sql('daily_summary', conn, if_exists='append', index=False)
 
 else:
     # No new Coffee Orders today
