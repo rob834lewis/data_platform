@@ -18,6 +18,7 @@
     28OCT2025   RLEWIS  Added psycopg2
     02NOV2025   RLEWIS  Added sys
     09NOV2025   RLEWIS  Added sqlalchemy
+    25NOV2025   RLEWIS  Added time
 ---------------------------------------------------------------------------------------------------
 """
 
@@ -34,6 +35,7 @@ import logging                      # For creating logs
 import sys
 import pandas_gbq
 import psycopg2
+import time
 from sqlalchemy import create_engine, text, Table, Column, Date, String, Float, MetaData
 from sqlalchemy.dialects.postgresql import insert
 
