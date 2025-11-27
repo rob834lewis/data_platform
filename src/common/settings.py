@@ -20,6 +20,7 @@
     01NOV2025   RLEWIS  Updated project root logic to account for movement of code to src
     02NOV2025   RLEWIS  Added docker db setting
     09NOV2025   RLEWIS  Updated with Azure and app settings
+    27NOV2025   RLEWIS  Updated AWS secret name and region to come from env
 -------------------------------------------------------------------------------------------------------------------
 """
 
@@ -233,9 +234,6 @@ hostname, ip_address = get_server_info()
 # --- Database Options ---
 # ------------------------
 
-# THE CLOUD DETAILS BELOW IS JUST A DUMMY PLACEHOLDER
-# WILL NEED TO USE SECRET MANAGERS WHEN ACTUALLY USING CLOUD
-
 # Local Postgres
 db_config_local = {
     "host"    : os.environ.get("DB_HOST_LOCAL"),
@@ -288,8 +286,8 @@ elif detect_environment() == 'aws':
     # --- AWS / RDS Postgres
     # --------------------------
 
-    secret_name = "rds!db-6e4e1293-907d-4132-aa4d-21b33c883d07"
-    region_name = "eu-north-1"
+    secret_name = os.environ.get("AWS_SECRET_NAME")
+    region_name = os.environ.get("AWS_REGION_NAME")
 
     client = boto3.client('secretsmanager', region_name=region_name)
     secret = client.get_secret_value(SecretId=secret_name)
