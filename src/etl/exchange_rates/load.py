@@ -5,11 +5,11 @@
 
     Date            : 27OCT2025
 
-    Purpose         : Transform step for Exchange Rates 
+    Purpose         : Load step for Exchange Rates 
 
     Dependencies    :
 
-    Program name    : transform
+    Program name    : load
 
     Modifications
     -------------
